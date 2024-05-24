@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VR Scene</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.139.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.139.2/examples/js/effects/StereoEffect.js"></script>
+  <script src="/static/DeviceOrientationControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.139.2/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var effect = new THREE.StereoEffect(renderer);
+    effect.setSize(window.innerWidth, window.innerHeight);
+
+    var controls = new THREE.DeviceOrientationControls(camera);
+
+    var loader = new THREE.STLLoader();
+    var mesh;
+
+    loader.load('/static/output_model.stl', function (geometry) {
+      var material = new THREE.MeshNormalMaterial();
+      mesh = new THREE.Mesh(geometry, material);
+    //   mesh.position.set(0, 300, 20);  // Exemple : rapprocher l'objet de la caméra en réduisant la valeur z
+      scene.add(mesh);
+    }, undefined, function (error) {
+      console.error('An error occurred while loading the STL file:', error);
+      var errorMsg = document.createElement('div');
+      errorMsg.style.position = 'absolute';
+      errorMsg.style.top = '10px';
+      errorMsg.style.width = '100%';
+      errorMsg.style.textAlign = 'center';
+      errorMsg.style.color = 'red';
+      errorMsg.innerHTML = 'An error occurred while loading the STL file. Please check the console for more details.';
+      document.body.appendChild(errorMsg);
+    });
+
+    // Ajuster la position de la caméra pour voir l'objet d'en haut
+    camera.position.set(0, 5, 0); // Positionner la caméra au-dessus de l'objet
+    camera.lookAt(new THREE.Vector3(0, 0, 0)); // Faire en sorte que la caméra regarde vers le bas
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      effect.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', function() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      effect.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Écouter les mises à jour deposition du serveur et mettre à jour la position de l'objet en temps réel
+    socket.on('position_update', function(data) {
+        if (mesh) {
+        mesh.position.set(data.x, data.y, data.z); // Mettre à jour la position de l'objet
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Position Input</title>
+</head>
+<body>
+  <h1>Position Input</h1>
+  <label for="x_input">X Position:</label>
+  <input type="number" id="x_input"><br>
+  <label for="y_input">Y Position:</label>
+  <input type="number" id="y_input"><br>
+  <label for="z_input">Z Position:</label>
+  <input type="number" id="z_input"><br>
+  <button onclick="updatePosition()">Update Position</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    function updatePosition() {
+      var x = parseFloat(document.getElementById('x_input').value);
+      var y = parseFloat(document.getElementById('y_input').value);
+      var z = parseFloat(document.getElementById('z_input').value);
+
+      var data = {x: x, y: y, z: z};
+      socket.emit('position_update', data);
+    }
+  </script>
+</body>
+</html>
