@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = 'secretIO'
 # socketio = SocketIO(app)
 socketio = SocketIO(app, async_mode='threading') 
 
@@ -31,4 +31,4 @@ def handle_position_update(data):
     socketio.emit('position_update', data)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0', port=5000)
